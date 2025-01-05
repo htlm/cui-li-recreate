@@ -1,5 +1,8 @@
 # Data from https://www.journal-of-hepatology.eu/article/S0168-8278(23)00190-3/fulltext
 # 23 patients, scRNA-seq data of liver cells
+# The following code is adapted from https://www.singlecellcourse.org/introduction-to-single-cell-rna-seq.html
+# to suit Cui and Li et al, Single-cell atlas of the liver myeloid compartment before 
+# and after cure of chronic viral hepatitis.
 
 
 # load the libraries
@@ -20,7 +23,7 @@ srat
 str(srat)
 
 # Meta.data is the most important field for next steps. It can be accessed 
-# using both @ and [[]] operators. Right now it has 3 fields per celL: dataset ID,
+# using both @ and [[]] operators. Right now it has 3 fields per cell: dataset ID,
 # number of UMI reads detected per cell (nCount_RNA), and the number of expressed 
 # (detected) genes per same cell (nFeature_RNA).
 
@@ -32,6 +35,10 @@ summary(meta$nFeature_RNA)
 
 
 
+############################################
+# THE FOLLOWING CODE IS 
+# Tutorial from 
+# https://www.singlecellcourse.org/introduction-to-single-cell-rna-seq.html
 
 
 # note that the data passed to the assay slot has to be a matrix!
