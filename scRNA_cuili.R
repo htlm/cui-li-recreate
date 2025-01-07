@@ -86,5 +86,38 @@ cd.gene.names <- gene.names[grep('CD', gene.names)]
 lymphocyte.plot <- VlnPlot(srat, features = c("CD4","CD19"),pt.size = 0.1, same.y.lims=TRUE) & 
   theme(plot.title = element_text(size=10))
 ggsave('plots/cuili_lymphocyte.png', plot = lymphocyte.plot)
+# CD19 expression is minimal, CD4 has some, but cd4 can also be an APC marker and we want DCs
+## PROBABLY don't need to remove these. 
+# Common myeloid markers: CD11b, CD14, CD33. I don't know why CD11b isn't in this dataset
+
+# From supp: Perform PCA with 35 PCs
+# Scale data first so that the highly expressed genes don't dominate the pca results, 
+# this basically scales all genes to have average expression of 0 and variance to be 1
+all.genes <- rownames(srat)
+srat <- ScaleData(srat, features = all.genes)
+# Then you can do pca
+srat <- RunPCA(srat, features = VariableFeatures(object = srat))
+
+# Check that the pca dimension loadings look well-behaved
+vz.pca.dims <- VizDimLoadings(srat, dims = 1:9, reduction = "pca") & 
+  theme(axis.text=element_text(size=5), axis.title=element_text(size=8,face="bold"))
+ggsave('plots/cuili_vz_pca_dims.png', plot = vz.pca.dims)
+elb.pca <- ElbowPlot(srat, ndims = 40)
+ggsave('plots/cuili_vz_elb_pca.png', plot = elb.pca)
+# It is unclear from this elbow plot why they picked 35 dimensions for downstream 
+# PCA analysis and interpretation. I'd have picked 10~20
 
 
+# From supp: "clustering was obtained using Louvain modularity optimization alg on a KNN graph
+# translation: They used the default algorithm in the FindClusters method of Seurat
+srat <- FindNeighbors(srat, dims = 1:35)
+srat <- FindClusters(srat, resolution = 0.5)
+srat <- RunUMAP(srat, dims = 1:35, verbose = F) # for Visualization
+# Let's see how many samples are in each cluster
+table(srat@meta.data$seurat_clusters)
+init.umap <- DimPlot(srat,label.size = 4,label = T)
+ggsave('plots/cuili_init_umap.png', plot = init.umap)
+
+
+# From supp: Used FindAllMarkers to determine cluster identities
+all.markers <- FindAllMarkers(srat, only.pos = T, min.pct = 0.5, logfc.threshold = 0.5)
